@@ -34,6 +34,9 @@ class Product(db.Model):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
+    shipping_fee = db.Column(db.Float, nullable=False, default=14.99)
+    commission_fee = db.Column(db.Float, nullable=False, default=5.0)
+    tax_fee = db.Column(db.Float, nullable=False, default=20.0)
     original_price = db.Column(db.Float, nullable=True)  # İndirim öncesi fiyat
     stock_quantity = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
@@ -61,6 +64,24 @@ class Product(db.Model):
         if self.original_price and self.original_price > self.price:
             return int(((self.original_price - self.price) / self.original_price) * 100)
         return 0
+
+    def get_final_price(self):
+        """Nihai satış fiyatını tüm ücretler dahil hesaplar."""
+        # Bu fonksiyon, oyuncunun belirlediği fiyata (self.price) göre maliyetleri ekleyerek
+        # müşterinin ödeyeceği son fiyatı hesaplar.
+        # Oyuncunun kârı: self.price - (ürün maliyeti)
+        # Müşteri fiyatı: self.price + vergiler + komisyon + kargo
+
+        # Komisyon, ürün fiyatı üzerinden hesaplanır
+        commission_amount = self.price * (self.commission_fee / 100.0)
+
+        # Vergi, (ürün fiyatı + komisyon) üzerinden hesaplanır
+        price_before_tax = self.price + commission_amount
+        tax_amount = price_before_tax * (self.tax_fee / 100.0)
+
+        # Nihai fiyat
+        final_price = self.price + tax_amount + self.shipping_fee
+        return final_price
     
     def is_in_stock(self):
         """Stokta olup olmadığını kontrol eder"""

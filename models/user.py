@@ -31,6 +31,7 @@ class User(UserMixin, db.Model):
     # İlişkiler
     orders = db.relationship('Order', backref='customer', lazy=True)
     cart_items = db.relationship('CartItem', backref='user', lazy=True)
+    store = db.relationship('Store', back_populates='user', uselist=False, cascade="all, delete-orphan")
     
     def __init__(self, username=None, email=None, first_name=None, last_name=None, is_admin=False, **kwargs):
         """User constructor"""
@@ -52,7 +53,9 @@ class User(UserMixin, db.Model):
     
     def set_password(self, password):
         """Şifreyi hashler ve kaydeder"""
+        print(f"[DEBUG] Setting password. Raw password: '{password}'")
         self.password_hash = generate_password_hash(password)
+        print(f"[DEBUG] Generated hash: {self.password_hash}")
     
     def check_password(self, password):
         """Şifreyi doğrular"""

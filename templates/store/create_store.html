@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Mağaza Oluştur - E-ticaret Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header text-center bg-success text-white">
+                    <h3><i class="bi bi-shop-window"></i> Kendi Mağazanı Oluştur ve Oyuna Başla!</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">Harika bir e-ticaret macerasına atılmak üzeresin! Mağazanın bilgilerini girerek ilk adımını at.</p>
+                    <hr>
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control", placeholder="Örn: Süper Elektronik Mağazası") }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.logo.label(class="form-label") }}
+                            {{ form.logo(class="form-control", placeholder="https://example.com/logo.png") }}
+                            {% if form.logo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.logo.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.slogan.label(class="form-label") }}
+                            {{ form.slogan(class="form-control", placeholder="Teknolojinin kalbi burada atar!") }}
+                            {% if form.slogan.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.slogan.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label") }}
+                            {{ form.category(class="form-select") }}
+                            {% if form.category.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.category.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="bi bi-cash-coin"></i>
+                            Başlangıç bütçeniz <strong>15,000 TL</strong> olarak hesabınıza eklenecektir.
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            {{ form.submit(class="btn btn-success btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

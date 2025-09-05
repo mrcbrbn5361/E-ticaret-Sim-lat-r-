@@ -40,6 +40,7 @@ def create_app():
     
     # Kullanıcı yükleyici
     from models.user import User
+    from models.store import Store
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -51,12 +52,14 @@ def create_app():
     from routes.products import products_bp
     from routes.cart import cart_bp
     from routes.admin import admin_bp
+    from routes.store import store_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(products_bp, url_prefix='/urunler')
     app.register_blueprint(cart_bp, url_prefix='/sepet')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(store_bp)
     
     # Veritabanı tablolarını oluştur
     with app.app_context():

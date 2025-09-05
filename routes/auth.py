@@ -34,6 +34,11 @@ def giris():
             login_user(user, remember=form.remember_me.data)
             flash('Başarıyla giriş yaptınız!', 'success')
             
+            # Mağaza kontrolü ve yönlendirme
+            if not user.store:
+                flash('Oyuna başlamak için lütfen mağazanızı oluşturun.', 'info')
+                return redirect(url_for('store.create_store'))
+
             # Sonraki sayfaya yönlendir
             next_page = request.args.get('next')
             if not next_page or url_parse(next_page).netloc != '':
