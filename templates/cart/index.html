@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sepetim - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-cart3 text-primary me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Sepetim</h1>
+            </div>
+            
+            {% if cart_items %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-bag"></i> Sepetinizdeki Oyunlar</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                {% for item in cart_items %}
+                                <div class="d-flex align-items-center p-3 border-bottom">
+                                    <div class="me-3">
+                                        <img src="{{ item.product.image_url or '/static/img/no-image.png' }}" 
+                                             alt="{{ item.product.name }}" 
+                                             class="rounded"
+                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                    </div>
+                                    
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{{ url_for('products.detail', product_id=item.product.id) }}" 
+                                               class="text-decoration-none text-dark">
+                                                {{ item.product.name }}
+                                            </a>
+                                        </h6>
+                                        <p class="text-muted mb-1">{{ item.product.category.name }}</p>
+                                        <p class="text-muted mb-0 small">{{ item.product.brand }}</p>
+                                    </div>
+                                    
+                                    <div class="me-3">
+                                        <form method="POST" action="{{ url_for('cart.update_item', item_id=item.id) }}" class="d-inline">
+                                            <div class="input-group" style="width: 120px;">
+                                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="changeQuantity(this, -1)">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                                       min="1" max="{{ item.product.stock_quantity }}" 
+                                                       class="form-control form-control-sm text-center">
+                                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="changeQuantity(this, 1)">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <div class="me-3 text-end">
+                                        <p class="mb-0 fw-bold text-primary">{{ "%.2f"|format(item.get_total_price()) }} TL</p>
+                                        <p class="mb-0 text-muted small">{{ "%.2f"|format(item.product.price) }} TL x {{ item.quantity }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <form method="POST" action="{{ url_for('cart.remove_item', item_id=item.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="return confirm('Bu oyunu sepetten çıkarmak istediğinizden emin misiniz?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <form method="POST" action="{{ url_for('cart.clear_cart') }}" class="d-inline">
+                                <button type="submit" class="btn btn-outline-warning" 
+                                        onclick="return confirm('Sepeti tamamen temizlemek istediğinizden emin misiniz?')">
+                                    <i class="bi bi-trash3"></i> Sepeti Temizle
+                                </button>
+                            </form>
+                            <a href="{{ url_for('products.index') }}" class="btn btn-outline-secondary ms-2">
+                                <i class="bi bi-arrow-left"></i> Alışverişe Devam Et
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-calculator"></i> Sipariş Özeti</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Ara Toplam:</span>
+                                    <span>{{ "%.2f"|format(total) }} TL</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Kargo:</span>
+                                    <span>
+                                        {% if total >= 100 %}
+                                            <span class="text-success">ÜCRETSİZ</span>
+                                        {% else %}
+                                            15.00 TL
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong>Toplam:</strong>
+                                    <strong class="text-primary">
+                                        {{ "%.2f"|format(total + (0 if total >= 100 else 15)) }} TL
+                                    </strong>
+                                </div>
+                                
+                                {% if total < 100 %}
+                                <div class="alert alert-info small">
+                                    <i class="bi bi-info-circle"></i>
+                                    100 TL ve üzeri alışverişlerde kargo ücretsiz!
+                                    {{ "%.2f"|format(100 - total) }} TL daha ekleyin.
+                                </div>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('cart.checkout') }}" class="btn btn-primary w-100">
+                                    <i class="bi bi-credit-card"></i> Ödemeye Geç
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-cart-x text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="text-muted mb-3">Sepetiniz Boş</h3>
+                    <p class="text-muted mb-4">Henüz sepetinizde hiç oyun yok. En sevdiğiniz oyunları keşfedin!</p>
+                    <a href="{{ url_for('products.index') }}" class="btn btn-primary">
+                        <i class="bi bi-controller"></i> Oyunları Keşfet
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function changeQuantity(button, change) {
+    const input = button.parentElement.querySelector('input[type="number"]');
+    const newValue = parseInt(input.value) + change;
+    const min = parseInt(input.min);
+    const max = parseInt(input.max);
+    
+    if (newValue >= min && newValue <= max) {
+        input.value = newValue;
+        // Auto-submit form after quantity change
+        button.closest('form').submit();
+    }
+}
+</script>
+{% endblock %}

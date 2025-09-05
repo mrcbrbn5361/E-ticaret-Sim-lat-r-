@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Sipariş Yönetimi - Gaming Store Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-clipboard-check text-success me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Sipariş Yönetimi</h1>
+            </div>
+            
+            <!-- Filtreler -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Durum</label>
+                            <select class="form-select" name="durum" id="status">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="Beklemede" {{ 'selected' if current_status == 'Beklemede' }}>Beklemede</option>
+                                <option value="Onaylandı" {{ 'selected' if current_status == 'Onaylandı' }}>Onaylandı</option>
+                                <option value="Kargoda" {{ 'selected' if current_status == 'Kargoda' }}>Kargoda</option>
+                                <option value="Teslim Edildi" {{ 'selected' if current_status == 'Teslim Edildi' }}>Teslim Edildi</option>
+                                <option value="İptal Edildi" {{ 'selected' if current_status == 'İptal Edildi' }}>İptal Edildi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Arama</label>
+                            <input type="text" class="form-control" name="ara" id="search" 
+                                   placeholder="Sipariş no, kullanıcı adı...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" name="tarih_baslangic" id="date_from">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" name="tarih_bitis" id="date_to">
+                        </div>
+                    </form>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-search"></i> Filtrele
+                        </button>
+                        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-arrow-clockwise"></i> Temizle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sipariş Listesi -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list"></i> Siparişler 
+                        <span class="badge bg-light text-dark ms-2">{{ orders.total if orders.total else 0 }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if orders and orders.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Kullanıcı</th>
+                                        <th>Tarih</th>
+                                        <th>Tutar</th>
+                                        <th>Ödeme</th>
+                                        <th>Durum</th>
+                                        <th width="150">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders.items %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ order.order_number }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ order.user.username }}</strong>
+                                                {% if order.user.email %}
+                                                    <br>
+                                                    <small class="text-muted">{{ order.user.email }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {{ order.created_at.strftime('%d.%m.%Y') }}<br>
+                                            <small class="text-muted">{{ order.created_at.strftime('%H:%M') }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ "%.2f"|format(order.total_amount) }} TL</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ order.payment_method }}</span>
+                                        </td>
+                                        <td>
+                                            {% if order.status == 'Beklemede' %}
+                                                <span class="badge bg-warning">{{ order.status }}</span>
+                                            {% elif order.status == 'Onaylandı' %}
+                                                <span class="badge bg-primary">{{ order.status }}</span>
+                                            {% elif order.status == 'Kargoda' %}
+                                                <span class="badge bg-info">{{ order.status }}</span>
+                                            {% elif order.status == 'Teslim Edildi' %}
+                                                <span class="badge bg-success">{{ order.status }}</span>
+                                            {% elif order.status == 'İptal Edildi' %}
+                                                <span class="badge bg-danger">{{ order.status }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ order.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-primary btn-sm dropdown-toggle" 
+                                                        type="button" data-bs-toggle="dropdown">
+                                                    İşlemler
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" 
+                                                           data-bs-toggle="modal" 
+                                                           data-bs-target="#orderModal{{ order.id }}">
+                                                            <i class="bi bi-eye"></i> Detayları Gör
+                                                        </a>
+                                                    </li>
+                                                    {% if order.status != 'İptal Edildi' and order.status != 'Teslim Edildi' %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="d-inline">
+                                                            <input type="hidden" name="status" value="Onaylandı">
+                                                            <button type="submit" class="dropdown-item text-primary">
+                                                                <i class="bi bi-check-circle"></i> Onayla
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="d-inline">
+                                                            <input type="hidden" name="status" value="Kargoda">
+                                                            <button type="submit" class="dropdown-item text-info">
+                                                                <i class="bi bi-truck"></i> Kargoya Ver
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="d-inline">
+                                                            <input type="hidden" name="status" value="Teslim Edildi">
+                                                            <button type="submit" class="dropdown-item text-success">
+                                                                <i class="bi bi-check2-all"></i> Teslim Et
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}" class="d-inline"
+                                                              onsubmit="return confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')">
+                                                            <input type="hidden" name="status" value="İptal Edildi">
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="bi bi-x-circle"></i> İptal Et
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Sayfalama -->
+                        {% if orders.pages > 1 %}
+                        <div class="card-footer">
+                            <nav aria-label="Sayfa navigasyonu">
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if orders.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.orders', sayfa=orders.prev_num) }}">Önceki</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in orders.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != orders.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('admin.orders', sayfa=page_num) }}">{{ page_num }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">…</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if orders.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.orders', sayfa=orders.next_num) }}">Sonraki</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">Hiç sipariş bulunamadı</h5>
+                            <p class="text-muted">Henüz hiç sipariş yok veya arama kriterlerinize uygun sipariş bulunamadı.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sipariş Detay Modalları -->
+{% if orders and orders.items %}
+    {% for order in orders.items %}
+    <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sipariş Detayları - #{{ order.order_number }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Kullanıcı:</strong> {{ order.user.username }}<br>
+                            <strong>E-posta:</strong> {{ order.user.email or 'Belirtilmemiş' }}<br>
+                            <strong>Sipariş Tarihi:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Ödeme Yöntemi:</strong> {{ order.payment_method }}<br>
+                            <strong>Durum:</strong> 
+                            <span class="badge bg-primary">{{ order.status }}</span><br>
+                            <strong>Toplam Tutar:</strong> {{ "%.2f"|format(order.total_amount) }} TL
+                        </div>
+                    </div>
+                    
+                    <strong>Teslimat Adresi:</strong>
+                    <p class="bg-light p-2 rounded">{{ order.shipping_address }}</p>
+                    
+                    {% if order.notes %}
+                    <strong>Sipariş Notları:</strong>
+                    <p class="bg-light p-2 rounded">{{ order.notes }}</p>
+                    {% endif %}
+                    
+                    <strong>Sipariş Edilen Oyunlar:</strong>
+                    <div class="table-responsive mt-2">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Oyun</th>
+                                    <th>Adet</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ "%.2f"|format(item.unit_price) }} TL</td>
+                                    <td>{{ "%.2f"|format(item.total_price) }} TL</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

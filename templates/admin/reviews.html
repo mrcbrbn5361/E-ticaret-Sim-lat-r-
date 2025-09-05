@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Yorum Yönetimi - Gaming Store Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-chat-square-text text-warning me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Yorum Yönetimi</h1>
+            </div>
+            
+            <!-- Filtreler -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Durum</label>
+                            <select class="form-select" name="durum" id="status">
+                                <option value="">Tüm Yorumlar</option>
+                                <option value="1" {{ 'selected' if current_status == '1' }}>Onaylanmış</option>
+                                <option value="0" {{ 'selected' if current_status == '0' }}>Beklemede</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="rating" class="form-label">Puan</label>
+                            <select class="form-select" name="puan" id="rating">
+                                <option value="">Tüm Puanlar</option>
+                                <option value="5" {{ 'selected' if current_rating == '5' }}>5 Yıldız</option>
+                                <option value="4" {{ 'selected' if current_rating == '4' }}>4 Yıldız</option>
+                                <option value="3" {{ 'selected' if current_rating == '3' }}>3 Yıldız</option>
+                                <option value="2" {{ 'selected' if current_rating == '2' }}>2 Yıldız</option>
+                                <option value="1" {{ 'selected' if current_rating == '1' }}>1 Yıldız</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Arama</label>
+                            <input type="text" class="form-control" name="ara" id="search" 
+                                   placeholder="Oyun adı, kullanıcı adı, yorum...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i> Filtrele
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Yorum Listesi -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list"></i> Yorumlar 
+                        <span class="badge bg-light text-dark ms-2">{{ reviews.total if reviews.total else 0 }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if reviews and reviews.items %}
+                        {% for review in reviews.items %}
+                        <div class="border-bottom p-3">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="me-3">
+                                            <img src="{{ review.product.image_url or '/static/img/no-image.png' }}" 
+                                                 alt="{{ review.product.name }}" 
+                                                 class="rounded"
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="{{ url_for('products.detail', product_id=review.product.id) }}" 
+                                                   class="text-decoration-none">
+                                                    {{ review.product.name }}
+                                                </a>
+                                            </h6>
+                                            <div class="mb-2">
+                                                <span class="text-warning">
+                                                    {{ "★" * review.rating }}{{ "☆" * (5 - review.rating) }}
+                                                </span>
+                                                <span class="ms-2 text-muted">{{ review.rating }}/5</span>
+                                            </div>
+                                            {% if review.title %}
+                                                <p class="mb-1"><strong>{{ review.title }}</strong></p>
+                                            {% endif %}
+                                            {% if review.comment %}
+                                                <p class="mb-2">{{ review.comment }}</p>
+                                            {% endif %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-person"></i> {{ review.user.username }} • 
+                                                <i class="bi bi-clock"></i> {{ review.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                                {% if review.is_verified_purchase %}
+                                                    • <span class="badge bg-success">Doğrulanmış Alışveriş</span>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-end">
+                                        {% if review.is_approved %}
+                                            <span class="badge bg-success mb-2">Onaylanmış</span>
+                                        {% else %}
+                                            <span class="badge bg-warning mb-2">Beklemede</span>
+                                        {% endif %}
+                                        <br>
+                                        
+                                        <div class="btn-group" role="group">
+                                            {% if not review.is_approved %}
+                                                <form method="POST" action="{{ url_for('admin.approve_review', review_id=review.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Onayla">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="POST" action="{{ url_for('admin.reject_review', review_id=review.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-warning btn-sm" title="Onayı Kaldır">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            <form method="POST" action="{{ url_for('admin.delete_review', review_id=review.id) }}" 
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Bu yorumu silmek istediğinizden emin misiniz?')">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Sil">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        
+                                        {% if review.helpful_count > 0 %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-hand-thumbs-up"></i> {{ review.helpful_count }} faydalı
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Sayfalama -->
+                        {% if reviews.pages > 1 %}
+                        <div class="card-footer">
+                            <nav aria-label="Sayfa navigasyonu">
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if reviews.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.reviews', sayfa=reviews.prev_num) }}">Önceki</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in reviews.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != reviews.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('admin.reviews', sayfa=page_num) }}">{{ page_num }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">…</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if reviews.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.reviews', sayfa=reviews.next_num) }}">Sonraki</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-square-text text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">Hiç yorum bulunamadı</h5>
+                            <p class="text-muted">Henüz hiç yorum yok veya arama kriterlerinize uygun yorum bulunamadı.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Toplu İşlemler -->
+            {% if reviews and reviews.items %}
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-tools"></i> Toplu İşlemler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Onay Bekleyen Yorumlar:</strong></p>
+                            <form method="POST" action="{{ url_for('admin.bulk_approve_reviews') }}" class="d-inline">
+                                <button type="submit" class="btn btn-success me-2"
+                                        onclick="return confirm('Tüm bekleyen yorumları onaylamak istediğinizden emin misiniz?')">
+                                    <i class="bi bi-check-all"></i> Tümünü Onayla
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Tehlikeli İşlemler:</strong></p>
+                            <form method="POST" action="{{ url_for('admin.delete_all_pending_reviews') }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger"
+                                        onclick="return confirm('Tüm bekleyen yorumları silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')">
+                                    <i class="bi bi-trash"></i> Bekleyen Tümünü Sil
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

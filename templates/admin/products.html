@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Oyun Yönetimi - Gaming Store Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-controller text-primary me-2" style="font-size: 2rem;"></i>
+                    <h1 class="mb-0">Oyun Yönetimi</h1>
+                </div>
+                <a href="{{ url_for('admin.add_product') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Yeni Oyun Ekle
+                </a>
+            </div>
+            
+            <!-- Filtreler -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">Kategori</label>
+                            <select class="form-select" name="kategori" id="category">
+                                <option value="">Tüm Kategoriler</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" 
+                                        {{ 'selected' if current_category == category.id }}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Durum</label>
+                            <select class="form-select" name="durum" id="status">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="1" {{ 'selected' if current_status == '1' }}>Aktif</option>
+                                <option value="0" {{ 'selected' if current_status == '0' }}>Pasif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Arama</label>
+                            <input type="text" class="form-control" name="ara" id="search" 
+                                   value="{{ current_search }}" placeholder="Oyun adı, marka, açıklama...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i> Filtrele
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Ürün Listesi -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list"></i> Oyunlar 
+                        <span class="badge bg-light text-dark ms-2">{{ products.total }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if products.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="60">Resim</th>
+                                        <th>Oyun Adı</th>
+                                        <th>Kategori</th>
+                                        <th>Fiyat</th>
+                                        <th>Stok</th>
+                                        <th>Durum</th>
+                                        <th>Rating</th>
+                                        <th width="150">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products.items %}
+                                    <tr>
+                                        <td>
+                                            <img src="{{ product.image_url or '/static/img/no-image.png' }}" 
+                                                 alt="{{ product.name }}" 
+                                                 class="rounded"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ product.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ product.brand }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ product.category.name }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ "%.2f"|format(product.price) }} TL</strong>
+                                            {% if product.original_price and product.original_price > product.price %}
+                                                <br>
+                                                <small class="text-muted text-decoration-line-through">
+                                                    {{ "%.2f"|format(product.original_price) }} TL
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if product.stock_quantity <= 5 %}
+                                                <span class="badge bg-danger">{{ product.stock_quantity }}</span>
+                                            {% elif product.stock_quantity <= 20 %}
+                                                <span class="badge bg-warning">{{ product.stock_quantity }}</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ product.stock_quantity }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if product.is_active %}
+                                                <span class="badge bg-success">Aktif</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Pasif</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-warning me-1">
+                                                    {{ "★" * (product.rating|int) }}{{ "☆" * (5 - (product.rating|int)) }}
+                                                </span>
+                                                <small class="text-muted">({{ product.review_count }})</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('products.detail', product_id=product.id) }}" 
+                                                   class="btn btn-outline-info btn-sm" title="Görüntüle">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Düzenle">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form method="POST" action="{{ url_for('admin.delete_product', product_id=product.id) }}" 
+                                                      class="d-inline" 
+                                                      onsubmit="return confirm('Bu oyunu silmek istediğinizden emin misiniz?')">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Sil">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Sayfalama -->
+                        {% if products.pages > 1 %}
+                        <div class="card-footer">
+                            <nav aria-label="Sayfa navigasyonu">
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if products.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.products', sayfa=products.prev_num, **request.args) }}">
+                                                Önceki
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in products.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != products.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('admin.products', sayfa=page_num, **request.args) }}">
+                                                        {{ page_num }}
+                                                    </a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">…</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if products.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.products', sayfa=products.next_num, **request.args) }}">
+                                                Sonraki
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">Hiç oyun bulunamadı</h5>
+                            <p class="text-muted">Arama kriterlerinizi değiştirin veya yeni oyun ekleyin.</p>
+                            <a href="{{ url_for('admin.add_product') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> İlk Oyunu Ekle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

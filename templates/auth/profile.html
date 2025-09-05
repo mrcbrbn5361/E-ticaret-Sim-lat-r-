@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Satıcı Profilim - Satış Oyunu{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-person-badge text-primary me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Satıcı Profilim</h1>
+            </div>
+            
+            <!-- Satıcı Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-shop"></i> Satıcı Hesap Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-4">Satıcı Adı:</dt>
+                                <dd class="col-sm-8">{{ current_user.username }}</dd>
+                                
+                                <dt class="col-sm-4">Tam Ad:</dt>
+                                <dd class="col-sm-8">{{ current_user.first_name }} {{ current_user.last_name }}</dd>
+                                
+                                <dt class="col-sm-4">Hesap Durumu:</dt>
+                                <dd class="col-sm-8">
+                                    {% if current_user.is_admin %}
+                                        <span class="badge bg-warning">Platform Yöneticisi</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Aktif Satıcı</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Kayıt Tarihi:</dt>
+                                <dd class="col-sm-8">{{ current_user.created_at.strftime('%d.%m.%Y') }}</dd>
+                                
+                                <dt class="col-sm-4">Son Aktivite:</dt>
+                                <dd class="col-sm-8">{{ current_user.last_login.strftime('%d.%m.%Y %H:%M') if current_user.last_login else 'İlk giriş' }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="bi bi-person-badge text-primary mb-3" style="font-size: 5rem;"></i>
+                            <br>
+                            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Profili Düzenle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Satış Performans Metrikleri -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Satış Performansım</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3 class="text-primary">{{ current_user.get_order_count() }}</h3>
+                            <p class="text-muted mb-0">Toplam Satış</p>
+                            <small class="text-success">{% if current_user.get_order_count() > 0 %}+{{ current_user.get_order_count() }}%{% else %}0%{% endif %} bu ay</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-success">{{ "%.0f"|format(current_user.get_total_spent()) }} ₺</h3>
+                            <p class="text-muted mb-0">Toplam Gelir</p>
+                            <small class="text-success">{% if current_user.get_total_spent() > 0 %}Kazanç var{% else %}İlk satışınızı yapın{% endif %}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-warning">{{ current_user.get_review_count() }}</h3>
+                            <p class="text-muted mb-0">Puan Durumu</p>
+                            <small class="text-warning">{% if current_user.get_review_count() >= 4 %}Mükemmel{% elif current_user.get_review_count() >= 2 %}İyi{% else %}Başlangıç{% endif %}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-info">{{ current_user.get_cart_item_count() }}</h3>
+                            <p class="text-muted mb-0">Aktif Ürün</p>
+                            <small class="text-info">Sepette bekleyen</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Satış Stratejisi İpuçları -->
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="text-success"><i class="bi bi-lightbulb"></i> Satış Stratejisi İpuçları:</h6>
+                        {% if current_user.get_order_count() == 0 %}
+                            <p class="mb-0 small">💡 <strong>İlk satışınızı yapmak için:</strong> Popüler oyunları keşfedin ve müşteri olarak deneyim kazanın!</p>
+                        {% elif current_user.get_order_count() < 3 %}
+                            <p class="mb-0 small">🎯 <strong>Satışları artırmak için:</strong> Trend olan oyunları takip edin ve fırsatları kaçırmayın!</p>
+                        {% else %}
+                            <p class="mb-0 small">🏆 <strong>Pro Satıcı:</strong> Harika gidiyorsunuz! Yeni kategorileri keşfetmeye devam edin!</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Son Satış İşlemlerim -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Son Satış İşlemlerim</h5>
+                        <a href="{{ url_for('auth.siparislerim') }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-list"></i> Tümünü Görüntüle
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Tarih</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td><strong>#{{ order.order_number }}</strong></td>
+                                        <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                                        <td><strong>{{ "%.2f"|format(order.total_amount) }} TL</strong></td>
+                                        <td>
+                                            {% if order.status == 'Beklemede' %}
+                                                <span class="badge bg-warning">{{ order.status }}</span>
+                                            {% elif order.status == 'Onaylandı' %}
+                                                <span class="badge bg-primary">{{ order.status }}</span>
+                                            {% elif order.status == 'Kargoda' %}
+                                                <span class="badge bg-info">{{ order.status }}</span>
+                                            {% elif order.status == 'Teslim Edildi' %}
+                                                <span class="badge bg-success">{{ order.status }}</span>
+                                            {% elif order.status == 'İptal Edildi' %}
+                                                <span class="badge bg-danger">{{ order.status }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ order.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#orderModal{{ order.id }}">
+                                                <i class="bi bi-eye"></i> Detay
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-currency-dollar text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">Henüz satış yapmadınız</h5>
+                            <p class="text-muted">Satış oyununa başlayın ve ilk kazancınızı elde edin!</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{{ url_for('products.index') }}" class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> Ürünleri İncele
+                                </a>
+                                <a href="{{ url_for('cart.index') }}" class="btn btn-outline-success">
+                                    <i class="bi bi-cart-plus"></i> Satın Al
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Satış Araçları -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-tools"></i> Satış Araçlarım</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('cart.index') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-cart-check"></i><br>Sepetim
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('products.index') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-shop"></i><br>Ürün Kataloğu
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('auth.siparislerim') }}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-list-check"></i><br>Satış Geçmişi
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-person-gear"></i><br>Ayarlar
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Günlük Hedef -->
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">Günlük Satış Hedefi</small>
+                            <small class="text-success">{{ "%.0f"|format(current_user.get_total_spent() * 0.1) }}/100 ₺</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ min(100, current_user.get_total_spent() * 0.1) }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sipariş Detay Modalları -->
+{% if orders %}
+    {% for order in orders %}
+    <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sipariş Detayları - #{{ order.order_number }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Sipariş Tarihi:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}<br>
+                            <strong>Ödeme Yöntemi:</strong> {{ order.payment_method }}<br>
+                            <strong>Durum:</strong> 
+                            <span class="badge bg-primary">{{ order.status }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Toplam Tutar:</strong> {{ "%.2f"|format(order.total_amount) }} TL<br>
+                            {% if order.notes %}
+                                <strong>Notlar:</strong> {{ order.notes }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <strong>Teslimat Adresi:</strong>
+                    <p class="bg-light p-2 rounded">{{ order.shipping_address }}</p>
+                    
+                    <strong>Sipariş Edilen Oyunlar:</strong>
+                    <div class="table-responsive mt-2">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Oyun</th>
+                                    <th>Adet</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ "%.2f"|format(item.unit_price) }} TL</td>
+                                    <td>{{ "%.2f"|format(item.total_price) }} TL</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gaming Store{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #ff6000;
+            --secondary-color: #4b5563;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #e55a00;
+            border-color: #e55a00;
+        }
+        
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .price-original {
+            text-decoration: line-through;
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        
+        .price-discount {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .discount-badge {
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50px;
+            padding: 2px 8px;
+            font-size: 0.8em;
+        }
+        
+        .rating-stars {
+            color: #fbbf24;
+        }
+        
+        .footer {
+            background-color: #1f2937;
+            color: white;
+            margin-top: 3rem;
+        }
+        
+        .cart-badge {
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-user-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fs-3" href="{{ url_for('main.index') }}">
+                <i class="bi bi-shop"></i> E-ticaret Simulator
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('products.index') }}">Ürünler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.about') }}">Hakkımızda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.contact') }}">İletişim</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Form -->
+                <form class="d-flex me-3" method="GET" action="{{ url_for('main.search') }}">
+                    <input class="form-control me-2" type="search" placeholder="Ürün ara..." name="q" value="{{ request.args.get('q', '') | e }}">
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{{ url_for('cart.index') }}">
+                                <i class="bi bi-cart3"></i> Sepet
+                                <span class="cart-badge" id="cart-count">{{ current_user.get_cart_item_count() }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ current_user.get_full_name() }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">Profilim</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.siparislerim') }}">Siparişlerim</a></li>
+                                {% if current_user.is_admin %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">Admin Panel</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.cikis') }}">Çıkış Yap</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.giris') }}">Giriş Yap</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.kayit') }}">Kayıt Ol</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>E-ticaret Simulator</h5>
+                    <p class="small">E-ticaret simülasyon platformu. Güvenli alışveriş deneyimi.</p>
+                </div>
+                <div class="col-md-2">
+                    <h6>Kurumsal</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="{{ url_for('main.about') }}" class="text-light text-decoration-none">Hakkımızda</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="text-light text-decoration-none">İletişim</a></li>
+                        <li><a href="{{ url_for('main.help') }}" class="text-light text-decoration-none">Yardım</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6>Müşteri Hizmetleri</h6>
+                    <ul class="list-unstyled small">
+                        <li><span class="text-light text-decoration-none">Sıkça Sorulan Sorular</span></li>
+                        <li><span class="text-light text-decoration-none">İade ve Değişim</span></li>
+                        <li><span class="text-light text-decoration-none">Kargo Takibi</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6>Hesabım</h6>
+                    <ul class="list-unstyled small">
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('auth.profile') }}" class="text-light text-decoration-none">Profilim</a></li>
+                            <li><a href="{{ url_for('auth.siparislerim') }}" class="text-light text-decoration-none">Siparişlerim</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('auth.giris') }}" class="text-light text-decoration-none">Giriş Yap</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Bizi Takip Edin</h6>
+                    <div class="d-flex gap-2">
+                        <span class="text-light" title="Facebook"><i class="bi bi-facebook fs-4"></i></span>
+                        <span class="text-light" title="Twitter"><i class="bi bi-twitter fs-4"></i></span>
+                        <span class="text-light" title="Instagram"><i class="bi bi-instagram fs-4"></i></span>
+                        <span class="text-light" title="YouTube"><i class="bi bi-youtube fs-4"></i></span>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-3 text-light">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="small mb-0">&copy; 2025 Gaming Store. Tüm hakları saklıdır.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="{{ url_for('main.privacy') }}" class="text-light text-decoration-none small me-3">Gizlilik Politikası</a>
+                    <a href="{{ url_for('main.terms') }}" class="text-light text-decoration-none small">Kullanım Koşulları</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Sepet sayacını güncelle
+        function updateCartCount() {
+            fetch('/sepet/api/sepet-sayisi')
+                .then(response => response.json())
+                .then(data => {
+                    const cartElement = document.getElementById('cart-count');
+                    if (cartElement) {
+                        cartElement.textContent = data.count;
+                    }
+                })
+                .catch(error => {
+                    console.log('Cart count update failed:', error);
+                });
+        }
+        
+        // Sayfa yüklendiğinde sepet sayacını güncelle
+        document.addEventListener('DOMContentLoaded', function() {
+            const isUserAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+            if (isUserAuthenticated) {
+                updateCartCount();
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

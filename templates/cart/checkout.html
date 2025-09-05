@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Ödeme - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-credit-card text-success me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Ödeme</h1>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <form method="POST" action="{{ url_for('cart.place_order') }}">
+                        <!-- Teslimat Bilgileri -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Teslimat Bilgileri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="shipping_address" class="form-label">Teslimat Adresi *</label>
+                                    <textarea class="form-control" id="shipping_address" name="shipping_address" 
+                                            rows="4" required placeholder="Teslimat adresinizi buraya yazın..."></textarea>
+                                    <div class="form-text">Dijital ürünler için e-posta adresiniz yeterlidir.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ödeme Yöntemi -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-wallet2"></i> Ödeme Yöntemi</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="credit_card" value="Kredi Kartı" required>
+                                            <label class="form-check-label" for="credit_card">
+                                                <i class="bi bi-credit-card me-2"></i>Kredi Kartı
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="bank_transfer" value="Havale/EFT">
+                                            <label class="form-check-label" for="bank_transfer">
+                                                <i class="bi bi-bank me-2"></i>Havale/EFT
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="digital_wallet" value="Dijital Cüzdan">
+                                            <label class="form-check-label" for="digital_wallet">
+                                                <i class="bi bi-wallet me-2"></i>Dijital Cüzdan
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="cod" value="Kapıda Ödeme">
+                                            <label class="form-check-label" for="cod">
+                                                <i class="bi bi-cash me-2"></i>Kapıda Ödeme
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sipariş Notları -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="bi bi-chat-square-text"></i> Sipariş Notları</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Özel Notlar (İsteğe bağlı)</label>
+                                    <textarea class="form-control" id="notes" name="notes" 
+                                            rows="3" placeholder="Siparişinizle ilgili özel bir notunuz var mı?"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('cart.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Sepete Geri Dön
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Siparişi Tamamla
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Sipariş Özeti -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-list-check"></i> Sipariş Özeti</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for item in cart_items %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-0 small">{{ item.product.name }}</h6>
+                                    <small class="text-muted">{{ item.quantity }} adet</small>
+                                </div>
+                                <span class="fw-bold">{{ "%.2f"|format(item.get_total_price()) }} TL</span>
+                            </div>
+                            {% endfor %}
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Ara Toplam:</span>
+                                <span>{{ "%.2f"|format(total) }} TL</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Kargo:</span>
+                                <span>{{ "%.2f"|format(shipping_cost) }} TL</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Toplam:</strong>
+                                <strong class="text-success">{{ "%.2f"|format(grand_total) }} TL</strong>
+                            </div>
+                            
+                            {% if shipping_cost == 0 %}
+                            <div class="alert alert-success small">
+                                <i class="bi bi-truck"></i>
+                                Ücretsiz kargo kazandınız!
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Güvenlik Bilgisi -->
+                            <div class="alert alert-info small">
+                                <i class="bi bi-shield-check"></i>
+                                Tüm ödemeleriniz SSL ile güvence altında
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gaming Store Avantajları -->
+                    <div class="card mt-3">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0"><i class="bi bi-star"></i> Gaming Store Avantajları</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0 small">
+                                <li class="mb-2">
+                                    <i class="bi bi-download text-success me-2"></i>
+                                    Anında dijital teslimat
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-arrow-clockwise text-primary me-2"></i>
+                                    7 gün koşulsuz iade
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-headset text-info me-2"></i>
+                                    7/24 müşteri desteği
+                                </li>
+                                <li class="mb-0">
+                                    <i class="bi bi-shield-fill-check text-warning me-2"></i>
+                                    Güvenli ödeme garantisi
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

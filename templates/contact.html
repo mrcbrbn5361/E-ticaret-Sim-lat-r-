@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}İletişim - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-5">İletişim</h1>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-envelope"></i> İletişim Bilgileri</h3>
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <h5><i class="bi bi-geo-alt"></i> Adres</h5>
+                                <p class="text-muted">
+                                    Gaming Store Merkez Ofis<br>
+                                    Teknoloji Mahallesi, Inovasyon Caddesi No: 42<br>
+                                    34000 Beşiktaş / İstanbul
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5><i class="bi bi-telephone"></i> Telefon</h5>
+                                <p class="text-muted">
+                                    Müşteri Hizmetleri: 0850 XXX XX XX<br>
+                                    Teknik Destek: 0850 XXX XX XX
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5><i class="bi bi-envelope"></i> E-posta</h5>
+                                <p class="text-muted">
+                                    Genel: info@trendyolapp.com<br>
+                                    Destek: destek@trendyolapp.com<br>
+                                    Satış: satis@trendyolapp.com
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5><i class="bi bi-clock"></i> Çalışma Saatleri</h5>
+                                <p class="text-muted">
+                                    Pazartesi - Cuma: 09:00 - 18:00<br>
+                                    Cumartesi: 09:00 - 17:00<br>
+                                    Pazar: Kapalı
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3><i class="bi bi-chat-dots"></i> Bize Yazın</h3>
+                            <hr>
+                            
+                            <form>
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Ad Soyad</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Telefon</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Konu</label>
+                                    <select class="form-select" id="subject" required>
+                                        <option value="">Seçiniz...</option>
+                                        <option value="genel">Genel Bilgi</option>
+                                        <option value="destek">Teknik Destek</option>
+                                        <option value="satis">Satış</option>
+                                        <option value="sikayet">Şikayet</option>
+                                        <option value="oneri">Öneri</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Mesaj</label>
+                                    <textarea class="form-control" id="message" rows="4" required></textarea>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i> Gönder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3><i class="bi bi-people"></i> Sosyal Medya</h3>
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <a href="#" class="text-decoration-none">
+                                        <i class="bi bi-facebook display-6 text-primary"></i>
+                                        <p class="mt-2">Facebook</p>
+                                    </a>
+                                </div>
+                                <div class="col-3">
+                                    <a href="#" class="text-decoration-none">
+                                        <i class="bi bi-twitter display-6 text-info"></i>
+                                        <p class="mt-2">Twitter</p>
+                                    </a>
+                                </div>
+                                <div class="col-3">
+                                    <a href="#" class="text-decoration-none">
+                                        <i class="bi bi-instagram display-6 text-danger"></i>
+                                        <p class="mt-2">Instagram</p>
+                                    </a>
+                                </div>
+                                <div class="col-3">
+                                    <a href="#" class="text-decoration-none">
+                                        <i class="bi bi-linkedin display-6 text-primary"></i>
+                                        <p class="mt-2">LinkedIn</p>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Profil Düzenle - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-pencil text-warning me-2" style="font-size: 2rem;"></i>
+                <h1 class="mb-0">Profil Düzenle</h1>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-gear"></i> Hesap Bilgilerini Güncelle</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {{ form.first_name(class="form-control") }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {{ form.last_name(class="form-control") }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">E-posta adresiniz dijital oyun teslimatı için kullanılır</div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6 class="mb-3"><i class="bi bi-key"></i> Şifre Değişikliği (İsteğe bağlı)</h6>
+                        
+                        <div class="mb-3">
+                            {{ form.current_password.label(class="form-label") }}
+                            {{ form.current_password(class="form-control") }}
+                            {% if form.current_password.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.current_password.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Şifrenizi değiştirmek için mevcut şifrenizi girin</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.new_password.label(class="form-label") }}
+                                    {{ form.new_password(class="form-control") }}
+                                    {% if form.new_password.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.new_password.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.confirm_password.label(class="form-label") }}
+                                    {{ form.confirm_password(class="form-control") }}
+                                    {% if form.confirm_password.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.confirm_password.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Profime Geri Dön
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Hesap Bilgileri -->
+            <div class="card mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Hesap Bilgileri</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Kullanıcı Adı:</dt>
+                        <dd class="col-sm-7">{{ current_user.username }}</dd>
+                        
+                        <dt class="col-sm-5">Hesap Türü:</dt>
+                        <dd class="col-sm-7">
+                            {% if current_user.is_admin %}
+                                <span class="badge bg-danger">Yönetici</span>
+                            {% else %}
+                                <span class="badge bg-success">Oyuncu</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Üyelik Tarihi:</dt>
+                        <dd class="col-sm-7">{{ current_user.created_at.strftime('%d.%m.%Y') }}</dd>
+                        
+                        <dt class="col-sm-5">Son Giriş:</dt>
+                        <dd class="col-sm-7">{{ current_user.last_login.strftime('%d.%m.%Y %H:%M') if current_user.last_login else 'İlk giriş' }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <!-- Gaming İstatistikleri -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-controller"></i> Gaming İstatistikleri</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <h4 class="text-primary mb-1">{{ current_user.get_order_count() }}</h4>
+                            <small class="text-muted">Sipariş</small>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <h4 class="text-success mb-1">{{ current_user.get_total_spent() }}</h4>
+                            <small class="text-muted">TL Harcama</small>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <h4 class="text-warning mb-1">{{ current_user.get_review_count() }}</h4>
+                            <small class="text-muted">Yorum</small>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <h4 class="text-info mb-1">{{ current_user.get_cart_item_count() }}</h4>
+                            <small class="text-muted">Sepette</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Güvenlik Uyarısı -->
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-shield-check me-2"></i>
+                <strong>Güvenlik İpucu:</strong> Gaming Store hesabınızın güvenliği için düzenli olarak şifrenizi değiştirin ve kişisel bilgilerinizi güncel tutun.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    var password = document.getElementById('new_password').value;
+    var confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Şifreler eşleşmiyor');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}
